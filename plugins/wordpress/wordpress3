@@ -1,0 +1,157 @@
+#!/usr/bin/php
+<?php
+error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
+/*
+ ** REQUIRES PHP7-CLI **
+ ---- DESCRIPTION ----
+ wordpress plugin for munin
+  it's a simple plugin to monitor users, comments, pingbacks
+  and your posts from your wordpress homepage.
+
+  Simply put your path of wp-config.php in your munin-node
+  configuration and this plugin does the rest for you.
+  Happy monitoring! :)
+
+  This plugin was inspired by the existing wordpress plugin:
+   https://github.com/munin-monitoring/contrib/blob/master/plugins/wordpress/wordpress2
+
+
+ ---- CONFIGURATION ----
+ You just need to provide the path to your
+ wp-config.php of your wordpress installation.
+
+ The configuration for munin-node is by default
+ at: /etc/munin/plugin-conf.d/munin-node
+
+ Example configuration:
+ [wordpress*]
+ env.NAME Blog of Chuck Norris
+ env.CONF /var/www/wordpress/wp-config.php
+
+ or you can use:
+
+ [wordpress*]
+ env.NAME Blog of Chuck Norris
+ env.HOST 127.0.0.1
+ env.USER blog
+ env.PASS password
+ env.DBNM wordpress
+ env.TBPF wp_
+
+if you want to add custom post types checks
+
+[wordpress*]
+ ** OTHER PARAMS **
+ env.CustomPostType {"0": "firstPostType", "b": "secondPostType", etc}
+
+
+
+ ---- More details ----
+ @Author...: Patrik Kernstock
+ @Version..: v1.1
+ @Date.....: 28 March 2018
+ @Web......: http://pkern.at
+ @Support..: support@pkern.at
+ @GitHub...: https://github.com/patschi/munin-plugins
+ @License..: http://creativecommons.org/licenses/by-nc-sa/3.0/
+
+*/
+#%# family=auto
+#%# capabilities=autoconf
+
+// Get configuration variables
+$d["name"] = getenv("NAME");
+$d["conf"] = getenv("CONF");
+$d["host"] = getenv("HOST");
+$d["user"] = getenv("USER");
+$d["pass"] = getenv("PASS");
+$d["tbpf"] = getenv("TBPF");
+$d["dbnm"] = getenv("DBNM");
+$d["CustomPostType"] = getenv("CustomPostType");
+
+// GATHER JSON DATA
+$json = [];
+if (!empty($d['CustomPostType']))
+    $json = json_decode($d['CustomPostType'], true);
+
+
+if (!empty($d["conf"]) && !empty($d["name"])) {
+    // INCLUDE wp-config.php
+    define("ABSPATH", str_replace("wp-config.php", "", $d["conf"]));
+    require_once($d["conf"]);
+    $d["host"] = DB_HOST;
+    $d["user"] = DB_USER;
+    $d["pass"] = DB_PASSWORD;
+    $d["dbnm"] = DB_NAME;
+    $d["tbpf"] = $table_prefix;
+}
+
+if ($argv[1] == "config") {
+    echo 'graph_title Wordpress statistic of ' . $d["name"] . "\n";
+    $graph_order = 'graph_order users posts comments pingbacks';
+    foreach ($json as $value){
+        $graph_order .= ' ' . $value;
+    }
+    echo $graph_order . "\n";
+    echo 'graph_vlabel Wordpress' . "\n";
+    echo 'graph_info some wordpress statistics of ' . $d["name"] . "\n";
+    echo 'graph_category cms' . "\n";
+    echo 'users.label Users' . "\n";
+    echo 'posts.label Posts' . "\n";
+    echo 'posts.draw LINE3' . "\n";
+    echo 'comments.label Comments' . "\n";
+    echo 'pingbacks.label Pingbacks' . "\n";
+    foreach ($json as $value) {
+        echo $value . '.label ' . ucfirst($value) . "\n";
+    }
+    exit(0);
+
+} else if ($argv[1] == "autoconf") {
+    if (file_exists($d["conf"])) {
+        echo "yes";
+        exit(0);
+    } else {
+        echo "no (config does not exist)";
+        exit(1);
+    }
+}
+
+if (!empty($d["conf"])) {
+    if (!file_exists($d["conf"])) {
+        echo "Error: config does not exist!";
+        exit(1);
+    }
+}
+
+// INIT VARIABLES
+$users = 0;
+$posts = 0;
+$comments = 0;
+$pingbacks = 0;
+
+
+$con = new PDO('mysql' . ":dbname=" . $d['dbnm'] . ";host=" . $d['host'] . ";charset=utf8", $d['user'], $d['pass']);
+$con->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+if ($con == false)
+    die("Error: Failed to connect to the MySQL database!");
+
+// GET DATA
+$users = $con->query("SELECT COUNT(*) FROM " . $d["tbpf"] . "users")->fetch()[0];
+$posts = $con->query("SELECT COUNT(*) FROM " . $d["tbpf"] . "posts    WHERE post_status='publish' AND post_password='' AND post_type='post'")->fetch()[0];
+$comments = $con->query("SELECT COUNT(*) FROM " . $d["tbpf"] . "comments WHERE comment_approved='1' AND comment_type=''")->fetch()[0];
+$pingbacks = $con->query("SELECT COUNT(*) FROM " . $d["tbpf"] . "comments WHERE comment_approved='1' AND comment_type='pingback'")->fetch()[0];
+
+// DISPLAY BASIC VALUES
+echo "users.value " . $users . "\n";
+echo "posts.value " . $posts . "\n";
+echo "comments.value " . $comments . "\n";
+echo "pingbacks.value " . $pingbacks . "\n";
+
+// DISPLAY CUSTOM POST TYPES
+foreach ($json as $value) {
+    $req = $con->query("SELECT COUNT(*) FROM " . $d["tbpf"] . "posts    WHERE post_password='' AND post_type='" . $value . "'")->fetch()[0];
+    echo $value . '.value ' . $req . "\n";
+    $req = null;
+}
+
+?>

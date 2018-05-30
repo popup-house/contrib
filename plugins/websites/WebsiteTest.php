@@ -6,7 +6,7 @@
  * Time: 21:25
  */
 
-require '../../vendor/autoload.php';
+require '/usr/share/munin/popup/contrib/vendor/autoload.php';
 use GuzzleHttp\Psr7\Request as GuzzleRequest;
 class WebsiteTest
 {

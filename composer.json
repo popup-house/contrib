@@ -1,0 +1,12 @@
+{
+    "name": "munin-popup/contrib",
+    "require": {
+        "guzzlehttp/guzzle": "^6.3"
+    },
+    "authors": [
+        {
+            "name": "CedricDALAT",
+            "email": "cedric.dalat@popup-house.com"
+        }
+    ]
+}

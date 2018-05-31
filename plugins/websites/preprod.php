@@ -23,11 +23,12 @@ if (strcasecmp(PHP_SAPI, 'cli') != 0) {
 
 $website = 'Préprod du site public';
 $url = 'https://preprod.popup-house.com/contact';
+$guzzle_params = ['verify' => false];
+$type = 'GET';
 
 require 'WebsiteTest.php';
 if (($argc > 1) && isset($argv[1]) && !empty($argv[1])) {
-    new WebsiteTest($website, $url, $argv[1]);
+    new WebsiteTest($website, $url, $type, $guzzle_params, null, $argv[1]);
 }
 else
-    new WebsiteTest($website, $url);
-
+    new WebsiteTest($website, $url, $type, $guzzle_params);

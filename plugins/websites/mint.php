@@ -21,8 +21,8 @@ if (strcasecmp(PHP_SAPI, 'cli') != 0) {
     exit(1);
 }
 
-$website = 'Odoo';
-$url = 'https://erp.popup-house.com/web/login';
+$website = 'MiNT <3';
+$url = 'https://mint.popup-house.com';
 $guzzle_params = ['verify' => false];
 $type = 'GET';
 

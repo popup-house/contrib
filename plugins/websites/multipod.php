@@ -21,8 +21,8 @@ if (strcasecmp(PHP_SAPI, 'cli') != 0) {
     exit(1);
 }
 
-$website = 'Odoo';
-$url = 'https://erp.popup-house.com/web/login';
+$website = 'Multipod';
+$url = 'http://www.multipod-studio.com/';
 $guzzle_params = ['verify' => false];
 $type = 'GET';
 
@@ -32,3 +32,4 @@ if (($argc > 1) && isset($argv[1]) && !empty($argv[1])) {
 }
 else
     new WebsiteTest($website, $url, $type, $guzzle_params);
+

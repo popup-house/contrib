@@ -18,10 +18,9 @@ class WebsiteTest
                 echo "graph_category websites" . PHP_EOL;
                 echo "graph_title $website ($url)" . PHP_EOL;
                 echo "graph_vlabel response" . PHP_EOL;
-                echo "response_time.label Temps de réponse" . PHP_EOL;
-                echo "response_time.info Le temps (en ms) que le site à mis à répondre" . PHP_EOL;
-//            echo "response_time"
-                echo "response_code.label Code de réponse" . PHP_EOL;
+                echo "response_time.label Temps de reponse" . PHP_EOL;
+                echo "response_time.info Le temps (en ms) que le site a mis a repondre" . PHP_EOL;
+                echo "response_code.label Code de reponse" . PHP_EOL;
                 exit(0);
                 break;
             default:
@@ -32,15 +31,25 @@ class WebsiteTest
         }
     }
 
-    function __construct($website, $url, $arg = null)
+    /**
+     * WebsiteTest constructor.
+     * @param $website string Le nom du site
+     * @param $url string l'url à check
+     * @param $type string le type de requete
+     * @param $guzzle_params array params du constructeur de guzzle (outil pour faire les requetes http)
+     * @param array $http_params paramètres de la requette
+     * @param null|string $arg Argument de la CLI
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    function __construct($website, $url, $type, $guzzle_params, $http_params = [] ,$arg = null)
     {
         /* check command line arguments */
         if(!is_null($arg))
             $this->getConfig($arg, $website, $url);
 
-        $client = new GuzzleHttp\Client(['verify' => false]);
+        $client = new GuzzleHttp\Client($guzzle_params);
         $one = microtime(true);
-        $res = $client->request('GET', $url);
+        $res = $client->request($type, $url, $http_params);
         $req_code = $res->getStatusCode();
         $req_time = microtime(true) - $one;
 

@@ -51,7 +51,7 @@ class WebsiteTest
             $req_code = $req_code * 0.001;
 
         echo 'response_time.value ' . $req_time . PHP_EOL;
-        echo 'response_code ' . $req_code . PHP_EOL;
+        echo 'response_code.value ' . $req_code . PHP_EOL;
 
     }
 }

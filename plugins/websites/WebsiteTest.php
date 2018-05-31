@@ -22,7 +22,6 @@ class WebsiteTest
                 echo "response_time.info Le temps (en ms) que le site à mis à répondre" . PHP_EOL;
 //            echo "response_time"
                 echo "response_code.label Code de réponse" . PHP_EOL;
-                echo "graph_args --lower-limit 0 --" . PHP_EOL;
                 exit(0);
                 break;
             default:

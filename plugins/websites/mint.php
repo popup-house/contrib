@@ -22,7 +22,7 @@ if (strcasecmp(PHP_SAPI, 'cli') != 0) {
 }
 
 $website = 'MiNT <3';
-$url = 'https://mint.popup-house.com';
+$url = 'https://mint.popup-house.tools';
 $guzzle_params = ['verify' => false];
 $type = 'GET';
 
